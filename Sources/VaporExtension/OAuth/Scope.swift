@@ -83,6 +83,14 @@ extension Scope:Sequence, IteratorProtocol {
     }
 }
 
+extension Scope: Equatable {
+    public static func == (lhs: Scope, rhs: Scope) -> Bool {
+        return lhs.resource == rhs.resource
+        && lhs.action == rhs.action
+    }
+}
+
+
 /// The basic Scope Operator
 ///
 /// As a Scope = Resource + Action, so we may define
@@ -96,12 +104,7 @@ extension Scope:Sequence, IteratorProtocol {
 /// 4. if one resource contains another, it mean this
 /// resource is the prefix of another。
 extension Scope {
-    static func == (lhs: Scope, rhs: Scope) -> Bool {
-        return lhs.resource == rhs.resource
-        && lhs.action == rhs.action
-    }
-    
-    static func <= (lhs: Scope, rhs: Scope) -> Bool {
+    public static func <= (lhs: Scope, rhs: Scope) -> Bool {
         var r = rhs
         if rhs.action == Scope.ACTION_SET_MARK {
             r = Scope(r: rhs.resource, a: lhs.action)
@@ -114,7 +117,7 @@ extension Scope {
         return false
     }
     
-    static func >= (lhs: Scope, rhs: Scope) -> Bool {
+    public static func >= (lhs: Scope, rhs: Scope) -> Bool {
         var l = lhs
         if lhs.action == Scope.ACTION_SET_MARK {
             l = Scope(r: lhs.resource, a: rhs.action)
@@ -139,5 +142,9 @@ extension Array where Element == Scope {
             }
         }
         return true
+    }
+    
+    public func contains(_ element: Element) -> Bool {
+        return self <= [element]
     }
 }
