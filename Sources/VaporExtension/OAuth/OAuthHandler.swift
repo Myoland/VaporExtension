@@ -13,24 +13,24 @@ public protocol ScopeCarrier: JWTPayload {
     var scopes: [String] { get }
 }
 
-//extension Request {
-//    struct Key: StorageKey {
-//        typealias Value = OAuthHandler
-//    }
-//
-//    public var oauth: OAuthHandler {
-//        if let existing = storage[Key.self] {
-//            return existing
-//        }
-//
-//        let handler = OAuthHandler(request: self)
-//        storage[Key.self] = handler
-//
-//        return handler
-//    }
-//}
+extension Request {
+    struct Key: StorageKey {
+        typealias Value = OAuthHandler
+    }
 
-public class OAuthHandler<T> where T: ScopeCarrier {
+    public var oauth: OAuthHandler {
+        if let existing = storage[Key.self] {
+            return existing
+        }
+
+        let handler = OAuthHandler(request: self)
+        storage[Key.self] = handler
+
+        return handler
+    }
+}
+
+public class OAuthHandler {
     
     weak var request: Request?
     
@@ -38,32 +38,29 @@ public class OAuthHandler<T> where T: ScopeCarrier {
         self.request = request
     }
     
-    // Every required scope should smaller than one of the user's permissions.
-    func assertScopes(_ requiredScopes: [String]) throws {
-        let payload = try self.getPayLoad()
-        let userScopes = payload.scopes
-        let convertedScopes = userScopes.compactMap {
-            Scope(raw: $0)
-        }
-        for requiredScope in requiredScopes {
-            var hasPermission = false
-            // try to use Scope first, if not exist than compare raw string
-            if convertedScopes.count > 0, let convertedScope = Scope(raw: requiredScope) {
-                hasPermission = convertedScopes.contains(convertedScope)
-            } else {
-                hasPermission = userScopes.contains(requiredScope)
-            }
-            if !hasPermission {
+    func assertScopes<T: ScopeCarrier>(_ required: [String], as payload: T.Type = T.self) throws {
+        let payload  = try self.getPayLoad(as: payload)
+        let declared = payload.scopes
+        try self.assertScopes(required, declared: declared)
+    }
+    
+    func assertScopes(_ required: [String], declared: [String]) throws {
+        
+        let declaredWrappers = declared.map { ScopeWarpper(raw: $0) }
+        let requiredWrappers = required.map { ScopeWarpper(raw: $0) }
+        
+        for require in requiredWrappers {
+            guard declaredWrappers.contains(where: { $0 <= require }) else  {
                 throw Abort(.unauthorized)
             }
         }
     }
     
-    func getPayLoad() throws -> T {
+    func getPayLoad<T: ScopeCarrier>(as payload: T.Type = T.self) throws -> T {
         guard let request = self.request else {
             throw Abort(.unauthorized)
         }
         
-        return try request.jwt.verify(as: T.self)
+        return try request.jwt.verify(as: payload)
     }
 }
