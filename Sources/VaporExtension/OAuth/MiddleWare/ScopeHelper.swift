@@ -7,15 +7,29 @@
 
 import Foundation
 import Vapor
+import JWT
 
 extension ScopeCarrier {
     public static func guardMiddleware(
         _ scopes: [String]
-    ) -> Middleware {
+    ) -> AsyncMiddleware {
         return ScopeHelper<Self>(scopes)
     }
 }
 
+extension ScopeCarrier {
+    public static func authenticator() -> ScopeCarrierAuthenticator<Self> {
+        ScopeCarrierAuthenticator<Self>()
+    }
+}
+
+public struct ScopeCarrierAuthenticator<Payload>: AsyncJWTAuthenticator
+    where Payload: ScopeCarrier
+{
+    public func authenticate(jwt: Payload, for request: Request) async throws {
+        request.auth.login(jwt)
+    }
+}
 
 /// 用户 Scope 认证中间件
 struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
@@ -33,6 +47,9 @@ struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
         to request: Request,
         chainingTo next: AsyncResponder
     ) async throws -> Response {
+        let payload = try request.jwt.verify(as:T.self)
+        try await T.authenticator().authenticate(jwt: payload, for: request)
+        
         guard try request.oauth.satisfied(with: self.scopes, as: T.self) else  {
             throw Abort(.unauthorized)
         }

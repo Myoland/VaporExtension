@@ -9,7 +9,7 @@ import Foundation
 import Vapor
 import JWT
 
-public protocol ScopeCarrier: JWTPayload {
+public protocol ScopeCarrier: JWTPayload, Authenticatable {
     var scopes: [String] { get }
 }
 
@@ -61,7 +61,9 @@ public class OAuthHandler {
         guard let request = self.request else {
             throw Abort(.unauthorized)
         }
-        
-        return try request.jwt.verify(as: payload)
+        guard let payload = request.auth.get(T.self) else {
+            throw Abort(.unauthorized)
+        }
+        return payload
     }
 }
