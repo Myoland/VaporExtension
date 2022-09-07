@@ -21,13 +21,17 @@ extension ScopeCarrier {
     public static func authenticator() -> ScopeCarrierAuthenticator<Self> {
         ScopeCarrierAuthenticator<Self>()
     }
+    
+    func authenticate(request: Request) async throws {
+        request.auth.login(self)
+    }
 }
 
 public struct ScopeCarrierAuthenticator<Payload>: AsyncJWTAuthenticator
     where Payload: ScopeCarrier
 {
     public func authenticate(jwt: Payload, for request: Request) async throws {
-        request.auth.login(jwt)
+        jwt.authenticate(request: Request)
     }
 }
 
