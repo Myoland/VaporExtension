@@ -8,27 +8,34 @@
 import Foundation
 import Vapor
 
+extension ScopeCarrier {
+    public static func guardMiddleware(
+        _ scopes: [String]
+    ) -> Middleware {
+        return ScopeHelper<Self>(scopes)
+    }
+}
+
 
 /// 用户 Scope 认证中间件
 struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
     var scopes: [String]
-    var payload: T.Type
 
-    init(_ scopes: [String], as payload: T.Type = T.self) {
+    init(_ scopes: [String]) {
         self.scopes = scopes
-        self.payload = payload
     }
     
-    init(scope: String, as payload: T.Type = T.self) {
-        self.init([scope], as: payload.self)
+    init(scope: String) {
+        self.init([scope])
     }
     
     func respond(
         to request: Request,
         chainingTo next: AsyncResponder
     ) async throws -> Response {
-        try request.oauth.assertScopes(self.scopes, as: payload.self)
-        
+        guard try request.oauth.satisfied(with: self.scopes, as: T.self) else  {
+            throw Abort(.unauthorized)
+        }
         return try await next.respond(to: request)
     }
 }
