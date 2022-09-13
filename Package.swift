@@ -30,6 +30,9 @@ let package = Package(
             ]),
         .testTarget(
             name: "VaporExtensionTests",
-            dependencies: ["VaporExtension"]),
+            dependencies: [
+                .target(name: "VaporExtension"),
+                .product(name: "XCTVapor", package: "vapor"),
+            ]),
     ]
 )

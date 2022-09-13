@@ -40,17 +40,17 @@ public class OAuthHandler {
     
     func satisfied<T: ScopeCarrier>(with required: [String], as payload: T.Type = T.self) throws -> Bool {
         let payload  = try self.getPayLoad(as: payload)
-        let declared = payload.scopes
-        return self.assertScopes(required, declared: declared)
+        let carried = payload.scopes
+        return self.assertScopes(required, carried: carried)
     }
     
-    func assertScopes(_ required: [String], declared: [String]) -> Bool {
+    func assertScopes(_ required: [String], carried: [String]) -> Bool {
         
-        let declaredWrappers = declared.map { ScopeWarpper(raw: $0) }
+        let carriedWrappers = carried.map { ScopeWarpper(raw: $0) }
         let requiredWrappers = required.map { ScopeWarpper(raw: $0) }
         
         for require in requiredWrappers {
-            guard declaredWrappers.contains(where: { $0 <= require }) else  {
+            guard carriedWrappers.contains(where: { require <= $0 }) else  {
                 return false
             }
         }
