@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ScopeWarpper {
+struct ScopeWarpper {
     let scope: Scope?
     let raw: String
     init(raw: String) {
@@ -17,21 +17,21 @@ public struct ScopeWarpper {
 }
 
 extension ScopeWarpper: Equatable {
-    public static func == (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
+    static func == (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
         if let ls = lhs.scope, let rs = rhs.scope {
             return ls == rs
         }
         return lhs.raw == rhs.raw
     }
     
-    public static func <= (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
+    static func <= (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
         if let ls = lhs.scope, let rs = rhs.scope {
             return ls <= rs
         }
         return lhs.raw == rhs.raw
     }
     
-    public static func >= (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
+    static func >= (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
         if let ls = lhs.scope, let rs = rhs.scope {
             return ls >= rs
         }

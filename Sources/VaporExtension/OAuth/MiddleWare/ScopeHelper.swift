@@ -11,9 +11,15 @@ import JWT
 
 extension ScopeCarrier {
     public static func guardMiddleware(
-        _ scopes: [String]
-    ) -> AsyncMiddleware {
+        with scopes: [String]
+    ) -> ScopeHelper<Self> {
         return ScopeHelper<Self>(scopes)
+    }
+    
+    public static func guardMiddleware(
+        with scope: String
+    ) -> ScopeHelper<Self> {
+        return ScopeHelper<Self>([scope])
     }
 }
 
@@ -31,12 +37,12 @@ public struct ScopeCarrierAuthenticator<Payload>: AsyncJWTAuthenticator
     where Payload: ScopeCarrier
 {
     public func authenticate(jwt: Payload, for request: Request) async throws {
-        jwt.authenticate(request: Request)
+        try await jwt.authenticate(request: request)
     }
 }
 
 /// 用户 Scope 认证中间件
-struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
+public struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
     var scopes: [String]
 
     init(_ scopes: [String]) {
@@ -47,10 +53,11 @@ struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
         self.init([scope])
     }
     
-    func respond(
+    public func respond(
         to request: Request,
         chainingTo next: AsyncResponder
     ) async throws -> Response {
+        // Try Login User First
         let payload = try request.jwt.verify(as:T.self)
         try await T.authenticator().authenticate(jwt: payload, for: request)
         

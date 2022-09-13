@@ -59,6 +59,12 @@ public struct Scope {
     }
 }
 
+extension Scope {
+    public var raw: String {
+        return "\(resource)\(Scope.SEPARATER)\(action)"
+    }
+}
+
 extension Scope: CustomStringConvertible {
     public var description: String {
         return "Scope<\(self.resource):\(self.action)>"
