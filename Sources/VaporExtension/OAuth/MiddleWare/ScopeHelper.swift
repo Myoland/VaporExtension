@@ -23,24 +23,6 @@ extension ScopeCarrier {
     }
 }
 
-extension ScopeCarrier {
-    public static func authenticator() -> ScopeCarrierAuthenticator<Self> {
-        ScopeCarrierAuthenticator<Self>()
-    }
-    
-    func authenticate(request: Request) async throws {
-        request.auth.login(self)
-    }
-}
-
-public struct ScopeCarrierAuthenticator<Payload>: AsyncJWTAuthenticator
-    where Payload: ScopeCarrier
-{
-    public func authenticate(jwt: Payload, for request: Request) async throws {
-        try await jwt.authenticate(request: request)
-    }
-}
-
 /// 用户 Scope 认证中间件
 public struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
     var scopes: [String]

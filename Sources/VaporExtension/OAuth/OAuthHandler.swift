@@ -9,10 +9,6 @@ import Foundation
 import Vapor
 import JWT
 
-public protocol ScopeCarrier: JWTPayload, Authenticatable {
-    var scopes: [String] { get }
-}
-
 extension Request {
     struct Key: StorageKey {
         typealias Value = OAuthHandler
