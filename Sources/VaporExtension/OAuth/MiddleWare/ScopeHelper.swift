@@ -9,6 +9,8 @@ import Foundation
 import Vapor
 import JWT
 
+
+// Extension for `Authenticatable`
 extension ScopeCarrier {
     public static func guardMiddleware(
         with scopes: [String]
@@ -23,7 +25,7 @@ extension ScopeCarrier {
     }
 }
 
-/// 用户 Scope 认证中间件
+/// A Middleware for Helping Scope asserting.
 public struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
     var scopes: [String]
 

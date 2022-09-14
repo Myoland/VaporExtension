@@ -7,7 +7,9 @@
 
 import Foundation
 
-struct ScopeWarpper {
+/// A Struct for wrapping different Scope types.
+/// And provide consistent operations.
+struct ScopeWrapper {
     let scope: Scope?
     let raw: String
     init(raw: String) {
@@ -16,22 +18,22 @@ struct ScopeWarpper {
     }
 }
 
-extension ScopeWarpper: Equatable {
-    static func == (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
+extension ScopeWrapper: Equatable {
+    static func == (lhs: ScopeWrapper, rhs: ScopeWrapper) -> Bool {
         if let ls = lhs.scope, let rs = rhs.scope {
             return ls == rs
         }
         return lhs.raw == rhs.raw
     }
     
-    static func <= (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
+    static func <= (lhs: ScopeWrapper, rhs: ScopeWrapper) -> Bool {
         if let ls = lhs.scope, let rs = rhs.scope {
             return ls <= rs
         }
         return lhs.raw == rhs.raw
     }
     
-    static func >= (lhs: ScopeWarpper, rhs: ScopeWarpper) -> Bool {
+    static func >= (lhs: ScopeWrapper, rhs: ScopeWrapper) -> Bool {
         if let ls = lhs.scope, let rs = rhs.scope {
             return ls >= rs
         }

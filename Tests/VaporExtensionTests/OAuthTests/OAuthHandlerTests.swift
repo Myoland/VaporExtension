@@ -29,14 +29,14 @@ final class OAuthHandlerTests: XCTestCase {
         let request = Request(application: app, on: app.eventLoopGroup.next())
         
         XCTAssertThrowsError(
-            try OAuthHandler(request: request).getPayLoad(as: User.self)
+            try ScopeHandler(request: request).getPayLoad(as: User.self)
         ) { error in
             XCTAssertEqual((error as? AbortError)?.status, .unauthorized)
         }
         
         
         XCTAssertThrowsError(
-            try OAuthHandler(request: request).satisfied(with: [], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: [], as: User.self)
         ) { error in
             XCTAssertEqual((error as? AbortError)?.status, .unauthorized)
         }
@@ -50,34 +50,34 @@ final class OAuthHandlerTests: XCTestCase {
         try await User.authenticator().authenticate(jwt: u, for: request)
         
         XCTAssertEqual(
-            try OAuthHandler(request: request).getPayLoad(as: User.self).subject.value,
+            try ScopeHandler(request: request).getPayLoad(as: User.self).subject.value,
             u.subject.value
         )
     }
    
     func testAssertScopes() async throws {
         XCTAssertTrue(
-            OAuthHandler(request: nil).assertScopes(["all"], carried: ["all"])
+            ScopeHandler(request: nil).assertScopes(["all"], carried: ["all"])
         )
         
         XCTAssertTrue(
-            OAuthHandler(request: nil).assertScopes(["all"], carried: ["all", "one"])
+            ScopeHandler(request: nil).assertScopes(["all"], carried: ["all", "one"])
         )
         
         XCTAssertFalse(
-            OAuthHandler(request: nil).assertScopes(["all", "one"], carried: ["all"])
+            ScopeHandler(request: nil).assertScopes(["all", "one"], carried: ["all"])
         )
         
         XCTAssertTrue(
-            OAuthHandler(request: nil).assertScopes(["all.part:read"], carried: ["all.part:*"])
+            ScopeHandler(request: nil).assertScopes(["all.part:read"], carried: ["all.part:*"])
         )
         
         XCTAssertFalse(
-            OAuthHandler(request: nil).assertScopes(["all.part:*"], carried: ["all.part:read"])
+            ScopeHandler(request: nil).assertScopes(["all.part:*"], carried: ["all.part:read"])
         )
         
         XCTAssertFalse(
-            OAuthHandler(request: nil).assertScopes(["all.part:write"], carried: ["all.part:read"])
+            ScopeHandler(request: nil).assertScopes(["all.part:write"], carried: ["all.part:read"])
         )
     }
     
@@ -90,23 +90,23 @@ final class OAuthHandlerTests: XCTestCase {
         try await User.authenticator().authenticate(jwt: u, for: request)
 
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:write"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:write"], as: User.self)
         )
 
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.part.sub:read"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part.sub:read"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:*"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all:*"], as: User.self)
         )
     }
 
@@ -119,11 +119,11 @@ final class OAuthHandlerTests: XCTestCase {
         try await User.authenticator().authenticate(jwt: u, for: request)
 
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["error"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["error"], as: User.self)
         )
     }
 
@@ -136,7 +136,7 @@ final class OAuthHandlerTests: XCTestCase {
         try await User.authenticator().authenticate(jwt: u, for: request)
 
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read", "all.part.sub:read"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read", "all.part.sub:read"], as: User.self)
         )
     }
 
@@ -149,18 +149,18 @@ final class OAuthHandlerTests: XCTestCase {
         try await User.authenticator().authenticate(jwt: u, for: request)
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read", "all.part:write"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read", "all.part:write"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read", "all.part:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read", "all.part:*"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read", "all:read"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read", "all:read"], as: User.self)
         )
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read", "all:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read", "all:*"], as: User.self)
         )
     }
 
@@ -173,11 +173,11 @@ final class OAuthHandlerTests: XCTestCase {
         try await User.authenticator().authenticate(jwt: u, for: request)
 
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.part:read", "all.part:write"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.part:read", "all.part:write"], as: User.self)
         )
 
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all:read", "all:write", "all:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all:read", "all:write", "all:*"], as: User.self)
         )
     }
 
@@ -191,32 +191,32 @@ final class OAuthHandlerTests: XCTestCase {
 
         // single required scope
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.partA:read"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.partA:read"], as: User.self)
         )
 
         // single required scope with sub action
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.partB:read"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.partB:read"], as: User.self)
         )
 
         // muti required scope
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.partA:read", "all.partB:write"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.partA:read", "all.partB:write"], as: User.self)
         )
 
         // muti sub required scope
         XCTAssertTrue(
-            try OAuthHandler(request: request).satisfied(with: ["all.partA.sub:read", "all.partB.sub:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.partA.sub:read", "all.partB.sub:*"], as: User.self)
         )
 
         // miss one required scope
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all.partA:*"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all.partA:*"], as: User.self)
         )
 
         // miss one required scope
         XCTAssertFalse(
-            try OAuthHandler(request: request).satisfied(with: ["all:*", "all.partB:write"], as: User.self)
+            try ScopeHandler(request: request).satisfied(with: ["all:*", "all.partB:write"], as: User.self)
         )
     }
 }

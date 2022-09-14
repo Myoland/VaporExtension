@@ -23,7 +23,6 @@ import Vapor
 /// .all { allAction in
 ///     allAction.delete(":id", use: ...)
 /// }
-
 public struct ScopedRouterBundler<T: ScopeCarrier> {
     let resource: String
     let routes: RoutesBuilder
