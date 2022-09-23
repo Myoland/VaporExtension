@@ -21,7 +21,7 @@ extension ScopeCarrier {
     public static func guardMiddleware(
         with scope: String
     ) -> ScopeHelper<Self> {
-        return ScopeHelper<Self>([scope])
+        return self.guardMiddleware(with: [scope])
     }
 }
 
@@ -42,8 +42,7 @@ public struct ScopeHelper<T: ScopeCarrier>: AsyncMiddleware {
         chainingTo next: AsyncResponder
     ) async throws -> Response {
         // Try Login User First
-        let payload = try request.jwt.verify(as:T.self)
-        try await T.authenticator().authenticate(jwt: payload, for: request)
+        try await T.authenticator().authenticate(request: request)
         
         guard try request.oauth.satisfied(with: self.scopes, as: T.self) else  {
             throw Abort(.unauthorized)
